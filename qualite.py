@@ -82,7 +82,27 @@ def analyser_ligne(ligne: str, *, nominal: float = NOMINAL, tolerance: float = T
 
     Lève ValueError si la ligne n'a pas deux champs, si le code ou la mesure est invalide.
     """
-    raise NotImplementedError("à compléter")
+    champs = ligne.split(";")
+
+    if len(champs) != 2:
+        raise ValueError(f"2 champs attendus, {len(champs)} trouvé(s)")
+
+    code = champs[0].strip().upper()
+
+    if not valider_code(code):
+        raise ValueError(f"code invalide : {code!r}")
+
+    mesure = lire_mesure(champs[1])
+
+    resultat = verdict(
+        mesure,
+        nominal=nominal,
+        tolerance=tolerance
+    )
+
+    return code, mesure, resultat
+
+    ## raise NotImplementedError("à compléter")
 
 
 # --- Étape 4 : analyser un lot --------------------------------------------------------------------
