@@ -11,7 +11,66 @@ AIDE = """Commandes :
 
 def executer(commande: str, saisies: list[str]) -> bool:
     """Exécute une commande ; renvoie False quand il faut quitter."""
-    raise NotImplementedError("à compléter")
+   
+    commande = commande.strip()
+
+    # Si l'utilisateur ne tape rien
+    if not commande:
+        return True
+
+    # Séparer la commande en mots
+    morceaux = commande.split()
+    action = morceaux[0].lower()
+
+    # 1. Commande quitter
+    if action == "quitter":
+        print(f"{len(saisies)} pièce(s) contrôlée(s) à la main. Au revoir.")
+        return False
+
+    # 2. Commande aide
+    elif action == "aide":
+        print(AIDE)
+        return True
+
+    # 3. Commande lot
+    elif action == "lot":
+        if len(morceaux) != 1:
+            print("Erreur : la commande lot ne prend aucun argument.")
+        else:
+            print(rapport(LOT_A + saisies))
+        return True
+
+    # 4. Commande mesure
+    elif action == "mesure":
+        if len(morceaux) != 3:
+            print("Commande inconnue ou incomplète. Tapez aide.")
+            return True
+
+        code = morceaux[1]
+        valeur = morceaux[2]
+
+        try:
+            # Analyser la pièce avec les fonctions déjà créées
+            code, mesure, resultat = analyser_ligne(
+                f"{code};{valeur}"
+            )
+
+            # Conserver la mesure pour le rapport du lot
+            saisies.append(f"{code};{valeur}")
+
+            # Afficher le résultat du contrôle
+            print(f"{code} : {mesure:.3f} mm -> {resultat}")
+
+        except ValueError as erreur:
+            print(f"Refusé : {erreur}")
+
+        return True
+
+    # 5. Commande inconnue
+    else:
+        print("Commande inconnue. Tapez aide pour voir les commandes.")
+        return True
+
 
 
 def main() -> None:
