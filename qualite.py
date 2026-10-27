@@ -113,12 +113,43 @@ def analyser_lot(lignes: list[str], **reglages) -> tuple[list[tuple[str, float, 
     son message est ajouté à erreurs, sous la forme "ligne 4 : mesure invalide : 'abc'".
     Les réglages (nominal, tolerance) sont transmis tels quels à analyser_ligne.
     """
-    raise NotImplementedError("à compléter")
+    resultats = []
+    erreurs = []
+
+    for numero, ligne in enumerate(lignes, start=1):
+
+        # Ignorer les lignes vides et les commentaires
+        if not ligne.strip() or ligne.lstrip().startswith("#"):
+            continue
+
+        try:
+            resultat = analyser_ligne(ligne, **reglages)
+            resultats.append(resultat)
+
+        except ValueError as err:
+            erreurs.append(f"ligne {numero} : {err}")
+
+    return resultats, erreurs
+
 
 
 def compter_verdicts(resultats: list[tuple[str, float, str]]) -> tuple[int, int, int]:
     """Renvoie le nombre de pièces (conformes, à reprendre, rebuts)."""
-    raise NotImplementedError("à compléter")
+    
+    conformes = 0
+    reprises = 0
+    rebuts = 0
+
+    for code, mesure, resultat in resultats:
+        if resultat == "conforme":
+            conformes += 1
+        elif resultat == "à reprendre":
+            reprises += 1
+        elif resultat == "rebut":
+            rebuts += 1
+
+    return conformes, reprises, rebuts
+
 
 
 # --- Étape 5 : statistiques et capabilité ---------------------------------------------------------
