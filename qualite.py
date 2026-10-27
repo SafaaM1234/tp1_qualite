@@ -31,7 +31,6 @@ def lire_mesure(texte: str) -> float:
 
 
 
-
 def valider_code(code: str) -> bool:
     
     if len(code) != 8:
@@ -49,8 +48,6 @@ def valider_code(code: str) -> bool:
         and chiffres.isascii()
         and chiffres.isdigit()
     )
-
-    ## raise NotImplementedError("à compléter")
 
 
 # --- Étape 2 : décider ----------------------------------------------------------------------------
@@ -73,7 +70,6 @@ def verdict(mesure: float, nominal: float = NOMINAL, tolerance: float = TOLERANC
     else:
         return "rebut"
 
-    ## raise NotImplementedError("à compléter")
 
 
 # --- Étape 3 : analyser une ligne -----------------------------------------------------------------
@@ -102,7 +98,6 @@ def analyser_ligne(ligne: str, *, nominal: float = NOMINAL, tolerance: float = T
 
     return code, mesure, resultat
 
-    ## raise NotImplementedError("à compléter")
 
 
 # --- Étape 4 : analyser un lot --------------------------------------------------------------------
@@ -118,7 +113,6 @@ def analyser_lot(lignes: list[str], **reglages) -> tuple[list[tuple[str, float, 
 
     for numero, ligne in enumerate(lignes, start=1):
 
-        # Ignorer les lignes vides et les commentaires
         if not ligne.strip() or ligne.lstrip().startswith("#"):
             continue
 
@@ -164,7 +158,7 @@ def moyenne(*valeurs: float) -> float:
 def ecart_type(*valeurs: float) -> float:
     """Écart type d'échantillon (division par n - 1). Lève ValueError avec moins de deux valeurs."""
     if len(valeurs) < 2:
-            raise ValueError("au moins deux valeurs sont nécessaires")
+        raise ValueError("au moins deux valeurs sont nécessaires")
 
     m = moyenne(*valeurs)
 
@@ -204,20 +198,17 @@ def capabilite(mesures: list[float], *, nominal: float = NOMINAL, tolerance: flo
 def rapport(lignes: list[str], *, nominal: float = NOMINAL, tolerance: float = TOLERANCE) -> str:
     """Construit le rapport de contrôle d'un lot, sous forme d'une seule chaîne (une ligne par pièce)."""
 
-    # 1. Analyser le lot
     resultats, erreurs = analyser_lot(
         lignes,
         nominal=nominal,
         tolerance=tolerance
     )
 
-    # 2. Préparer l'en-tête
     lignes_rapport = [
         f"Contrôle des axes : {nominal:.2f} ± {tolerance:.2f} mm",
         "Code        Mesure    Écart   Verdict"
     ]
 
-    # 3. Ajouter une ligne pour chaque pièce valide
     for code, mesure, resultat in resultats:
         e = ecart(mesure, nominal)
 
@@ -230,7 +221,6 @@ def rapport(lignes: list[str], *, nominal: float = NOMINAL, tolerance: float = T
 
         lignes_rapport.append(ligne_piece)
 
-    # 4. Calculer le bilan
     conformes, reprises, rebuts = compter_verdicts(resultats)
     total = len(resultats)
 
@@ -242,7 +232,6 @@ def rapport(lignes: list[str], *, nominal: float = NOMINAL, tolerance: float = T
         f"({pourcentage:.1f}%) | à reprendre : {reprises} | rebuts : {rebuts}"
     )
 
-    # 5. Calculer la capabilité si elle est possible
     mesures = [mesure for code, mesure, resultat in resultats]
 
     if len(mesures) >= 2 and len(set(mesures)) > 1:
@@ -258,7 +247,6 @@ def rapport(lignes: list[str], *, nominal: float = NOMINAL, tolerance: float = T
             f"Cp = {cp:.2f} | Cpk = {cpk:.2f} -> procédé {capacite}"
         )
 
-    # 6. Ajouter les erreurs à la fin
     if erreurs:
         lignes_rapport.append("")
         lignes_rapport.append(f"Lignes rejetées : {len(erreurs)}")
@@ -266,7 +254,7 @@ def rapport(lignes: list[str], *, nominal: float = NOMINAL, tolerance: float = T
         for erreur in erreurs:
             lignes_rapport.append(f"  {erreur}")
 
-    # 7. Retourner tout le rapport sous forme d'une chaîne
+
     return "\n".join(lignes_rapport)
 
 
@@ -276,4 +264,27 @@ def histogramme(mesures: list[float], *, debut: float, pas: float, nb_classes: i
 
     Les mesures hors de [debut, debut + nb_classes * pas[ sont ignorées.
     """
-    raise NotImplementedError("à compléter")
+    if pas <= 0:
+        raise ValueError("le pas doit être positif")
+
+    if nb_classes <= 0:
+        raise ValueError("le nombre de classes doit être positif")
+
+    lignes = []
+    
+    for i in range(nb_classes):
+        bas = round(debut + i * pas, 3)
+        haut = round(debut + (i + 1) * pas, 3)
+
+        nombre = 0
+
+        for mesure in mesures:
+            if bas <= mesure < haut:
+                nombre += 1
+
+        etoiles = "*" * nombre
+
+        ligne = f"[{bas:.3f} ; {haut:.3f}[ " + etoiles
+        lignes.append(ligne)
+
+    return "\n".join(lignes)
